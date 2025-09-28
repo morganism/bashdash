@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# example3.sh - demonstration of bashtui.sh
+
+# Source the reusable dashboard
+source ~/bin/bashtui.sh
+
+dashboard_init
+
+# ---------- REGISTER TASKS ----------
+register_task "Download"
+register_task "Disk Check"
+register_task "Service X"
+
+# ---------- SIMULATED TASK FUNCTIONS ----------
+download_task() {
+    update_task_status "Download" 1
+    for i in {1..100}; do
+        sleep 0.05
+        update_task_progress "Download" $i
+    done
+    update_task_status "Download" 2
+}
+
+disk_task() {
+    update_task_status "Disk Check" 1
+    sleep 3
+    update_task_progress "Disk Check" 100
+    update_task_status "Disk Check" 2
+}
+
+service_task() {
+    update_task_status "Service X" 1
+    sleep 5
+    update_task_progress "Service X" 100
+    update_task_status "Service X" 3
+}
+
+# ---------- START TASKS IN BACKGROUND ----------
+download_task &
+disk_task &
+service_task &
+
+# ---------- DASHBOARD REFRESH LOOP ----------
+while :; do
+    draw_dashboard
+    sleep 0.1
+    # Break if no tasks are running
+    running=false
+    for status in "${task_status[@]}"; do
+        [[ "$status" == 1 ]] && running=true
+    done
+    $running || break
+done
+
+dashboard_cleanup
+echo "All tasks completed!"
+

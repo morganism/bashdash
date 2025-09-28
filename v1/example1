@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# ----------- ANSI color codes ------------
+colors=(
+    "\e[41m"   # red
+    "\e[43m"   # amber/yellow
+    "\e[42m"   # green
+    "\e[44m"   # blue
+    "\e[47m"   # bright white
+    "\e[37m"   # white
+    "\e[90m"   # grey
+    "\e[40m"   # black
+    "\e[45m"   # magenta
+    "\e[35m"   # purple
+)
+reset="\e[0m"
+blink="\e[5m"
+
+# ----------- Functions ------------
+
+draw_badges() {
+    local statuses=("$@")
+    for i in "${statuses[@]}"; do
+        local style="${colors[i]}"
+        printf "%s  %s" "$style" "$reset"
+    done
+    printf "\n"
+}
+
+draw_progress_bar() {
+    local progress=$1
+    local width=40
+    local filled=$((progress * width / 100))
+    printf "["
+    for ((i=0;i<filled;i++)); do printf "#"; done
+    for ((i=filled;i<width;i++)); do printf "-"; done
+    printf "] %d%%\n" "$progress"
+}
+
+draw_sparkline() {
+    local data=("$@")
+    local blocks=("▁" "▂" "▃" "▄" "▅" "▆" "▇" "█")
+    local max=0
+    for v in "${data[@]}"; do ((v>max)) && max=$v; done
+    for v in "${data[@]}"; do
+        local idx=$((v * 7 / max))
+        printf "%s" "${blocks[idx]}"
+    done
+    printf "\n"
+}
+
+prompt_input() {
+    read -p "Enter command: " user_input
+    echo "You typed: $user_input"
+}
+
+# ----------- Demo ------------
+
+clear
+
+# Example status badges (indices to colors array)
+badges=(0 1 2 3 4)  # red, amber, green, blue, bright white
+draw_badges "${badges[@]}"
+
+# Progress bar
+for i in {0..100..10}; do
+    tput sc            # save cursor
+    tput cup 2 0       # move to line 2
+    draw_progress_bar "$i"
+    sleep 0.1
+    tput rc            # restore cursor
+done
+
+# Sparkline example
+data=(5 3 8 2 7 4 6 1 9 5)
+draw_sparkline "${data[@]}"
+
+# Prompt input
+prompt_input
+

@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+: <<DOCXX
+Add description
+Author: morgan@morganism.dev
+Date: Sun 28 Sep 2025 10:31:06 BST
+DOCXX
+
+
+# ---------- COLORS & STYLES ----------
+reset="\e[0m"
+colors=("\e[41m" "\e[43m" "\e[42m" "\e[44m" "\e[47m" "\e[37m" "\e[90m")
+
+# ---------- TASKS ----------
+declare -A task_status
+declare -A task_progress
+task_list=("Download" "Disk Check" "Service X")
+
+for t in "${task_list[@]}"; do
+    task_status["$t"]=0
+    task_progress["$t"]=0
+done
+
+# ---------- DASHBOARD ----------
+draw_dashboard() {
+    tput cup 0 0
+    echo "---- Deployment Dashboard ----"
+    for t in "${task_list[@]}"; do
+        local status=${task_status[$t]}
+        local color
+        case $status in
+            0) color="${colors[6]}" ;; # grey
+            1) color="${colors[1]}" ;; # amber
+            2) color="${colors[2]}" ;; # green
+            3) color="${colors[0]}" ;; # red
+        esac
+        printf "%b %-15s %b [%3d%%]\n" "$color" "$t" "$reset" "${task_progress[$t]}"
+    done
+    echo "------------------------------"
+}
+
+# ---------- INIT ----------
+clear
+tput civis
+
+# ---------- SIMULATED TASKS ----------
+task_status["Download"]=1
+for i in {1..100}; do
+    task_progress["Download"]=$i
+    draw_dashboard
+    sleep 0.03
+done
+task_status["Download"]=2
+draw_dashboard
+
+task_status["Disk Check"]=1
+for i in {1..100}; do
+    task_progress["Disk Check"]=$i
+    draw_dashboard
+    sleep 0.03
+done
+task_status["Disk Check"]=2
+draw_dashboard
+
+task_status["Service X"]=1
+for i in {1..100}; do
+    task_progress["Service X"]=$i
+    draw_dashboard
+    sleep 0.03
+done
+task_status["Service X"]=3
+draw_dashboard
+
+# ---------- CLEANUP ----------
+tput cnorm
+echo "All tasks completed!"
+

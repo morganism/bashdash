@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+reset="\e[0m"
+colors=("\e[41m" "\e[43m" "\e[42m" "\e[44m" "\e[47m")  # red, amber, green, blue, white
+blink="\e[5m"
+
+# Task status: 0=not started, 1=running, 2=success, 3=fail
+task_names=("Download" "Disk Check" "Service X")
+task_status=(1 1 0)  # initial example
+
+draw_dashboard() {
+    tput cup 0 0
+    echo "---- Deployment Dashboard ----"
+    # badges
+    for i in "${!task_names[@]}"; do
+        case ${task_status[i]} in
+            0) color="\e[90m" ;;  # grey
+            1) color="\e[43m" ;;  # amber for running
+            2) color="\e[42m" ;;  # green success
+            3) color="\e[41m" ;;  # red fail
+        esac
+        printf "%b %s %b\n" "$color" "${task_names[i]}" "$reset"
+    done
+    echo "------------------------------"
+}
+
+# Simulate tasks running in background
+simulate_tasks() {
+    sleep 3
+    task_status[0]=2  # download done
+    sleep 2
+    task_status[1]=2  # disk check done
+    sleep 2
+    task_status[2]=3  # service fail
+}
+
+clear
+tput civis  # hide cursor
+simulate_tasks &
+
+# Dashboard refresh loop
+while :; do
+    draw_dashboard
+    sleep 0.5
+    # break when all tasks finished
+    if [[ "${task_status[@]}" != *1* ]]; then
+        break
+    fi
+done
+
+tput cnorm  # show cursor
+echo "Deployment done!"
+

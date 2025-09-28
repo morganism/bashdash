@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+: <<DOCXX
+Add description
+Author: morgan@morganism.dev
+Date: Sun 28 Sep 2025 10:33:09 BST
+DOCXX
+
+
+
+# ------------------ COLORS & STYLES ------------------
+reset="\e[0m"
+blink="\e[5m"
+colors=("\e[41m" "\e[43m" "\e[42m" "\e[44m" "\e[47m" "\e[37m" "\e[90m")
+
+# ------------------ TASK MANAGEMENT ------------------
+declare -A task_status    # 0=not started,1=running,2=success,3=fail
+declare -A task_progress  # 0-100%
+task_list=("Download" "Disk Check" "Service X")
+
+for t in "${task_list[@]}"; do
+    task_status["$t"]=0
+    task_progress["$t"]=0
+done
+
+# ------------------ DASHBOARD ------------------
+draw_dashboard() {
+    tput cup 0 0
+    echo "---- Deployment Dashboard ----"
+    for t in "${task_list[@]}"; do
+        local status=${task_status[$t]}
+        local color
+        case $status in
+            0) color="${colors[6]}" ;; # grey
+            1) color="${colors[1]}" ;; # amber
+            2) color="${colors[2]}" ;; # green
+            3) color="${colors[0]}" ;; # red
+        esac
+        printf "%b %-15s %b [%3d%%]\n" "$color" "$t" "$reset" "${task_progress[$t]}"
+    done
+    echo "------------------------------"
+    echo "Log output below:"
+}
+
+# ------------------ SIMULATED TASKS ------------------
+download_task() {
+    task_status["Download"]=1
+    for i in {1..100}; do
+        task_progress["Download"]=$i
+        sleep 0.05
+    done
+    task_status["Download"]=2
+}
+
+disk_task() {
+    task_status["Disk Check"]=1
+    for i in {1..100}; do
+        task_progress["Disk Check"]=$i
+        sleep 0.03
+    done
+    task_status["Disk Check"]=2
+}
+
+service_task() {
+    task_status["Service X"]=1
+    for i in {1..100}; do
+        task_progress["Service X"]=$i
+        sleep 0.04
+    done
+    task_status["Service X"]=3
+}
+
+# ------------------ LOG SIMULATION ------------------
+simulate_log() {
+    tput cup 7 0
+    for i in {1..50}; do
+        echo "Installing component $i..."
+        sleep 0.1
+    done
+}
+
+# ------------------ INITIALIZATION ------------------
+clear
+tput civis  # hide cursor
+
+# Run tasks in background
+download_task &
+disk_task &
+service_task &
+simulate_log &
+
+# ------------------ MAIN REFRESH LOOP ------------------
+while :; do
+    draw_dashboard
+    sleep 0.1
+    running=false
+    for status in "${task_status[@]}"; do
+        [[ "$status" == 1 ]] && running=true
+    done
+    $running || break
+done
+
+# ------------------ CLEANUP ------------------
+tput cnorm
+echo "All tasks completed!"
+

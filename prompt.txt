@@ -1,0 +1,28 @@
+prompt.txt
+
+write a really complex general purpose dashboard framework app, called 'bashdash', to be sourced as a bash TUI/GUI using tput ANSI escape sequrnces for: cursor control, text colours and box-drawing characters. Use the box-drawing characters tor create the following "widgets" : dialogs with a shadow indicating height above page, spinners, progress bars, sparkline graphs and custom combo boxen (such as a select box that you can also enter freetext for the input, a custom toggle that beautifies a checkbox, a slider that wraps an input box that accepts an int between 0-100, maybe you can think of one ?)   
+1) each of these controls/"widgets" should be transportable (function does not depend on external values) and maintain it's own state
+2) each of these controls/"widgets" should come with 
+  (a) Help text that explains exactly how to use it, 
+  (b) and every line of code (where sensible) should be commented with an explanation of what it's purpose is, where a variable came from and is destined, 
+  (c) also why certain logic was chosen for efficiency, readability, showing-off clever idiomatic phrasing or syntactic sugar! 
+  (d)also indicate compatiblity concerns 
+3) each of these controls/"widgets" should be able to be instantiated via a function call where: 
+  (a) $1, $2, $3 ...  inside the function are key=val pairs
+  (b) required keys: id, val : optional keys (vary by "widget"): colo[u]r, height, width, default (value)
+
+for example: if i make 2 progress bars, $1:id=$PID (of process being tracked) or REFerence (arbitrary String), $2: val=10 (+/-# to increase %displayed)
+
+4) should pass 'shellcheck'
+
+5) the framework should include a 'setup()' function that when called will generate a configuration file (.{{SCRIPT_NAME}}.dbash) that will be used by this new script named, SCRIPT_NAME, and contain titles, names, defaults, usage text, etc
+
+6) the framework should reserve some rows at the top of the screen to contain multiple progress bars that will be individually updated concurrently. use the ansi escape "textures", emoji, and box-drawing to create visuals, 
+the space below should be used for colourful timestamped log output
+
+7) the framework should be easy to employ for new applications and updating real-time "widgets" like progress bars should be easy
+
+8) the framework should be stylish, ridiculously commented as it will serve as an example and traing tool, updating the upper, reserved rows should be easy and the display should be smooth and not "glitch" with stray text or object location/update  issues
+
+9) use your creativity and perhaps include a bash http server to be optionally used in place of the console, style it with Bootstrap CSS and a sleek Apple like look, canvas elements, and dynamic html for transitions, "widget" implementation, OO javascript programming to handle logic, and kiosk mode for professional presentation. along with small screen support as a Progressive Web App
+

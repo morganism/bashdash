@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+: <<DOCXX
+Add description
+Author: morgan@morganism.dev
+Date: Sun 28 Sep 2025 10:42:42 BST
+DOCXX
+
+# ------------------ COLORS & STYLES ------------------
+reset="\e[0m"
+colors=("\e[41m" "\e[43m" "\e[42m" "\e[44m" "\e[47m" "\e[37m" "\e[90m")
+
+# ------------------ TASKS ------------------
+task_list=("Download" "Disk Check" "Service X")
+task_files=("/tmp/progress_download" "/tmp/progress_disk" "/tmp/progress_service")
+status_files=("/tmp/status_download" "/tmp/status_disk" "/tmp/status_service")
+
+# Initialize files
+for f in "${task_files[@]}" "${status_files[@]}"; do
+    echo 0 > "$f"
+done
+
+# ------------------ DASHBOARD ------------------
+draw_dashboard() {
+    tput cup 0 0
+    echo "---- Deployment Dashboard ----"
+    for i in "${!task_list[@]}"; do
+        local name; name=${task_list[i]}
+        local progress; progress=$(cat "${task_files[i]}")
+        local status; status=$(cat "${status_files[i]}")
+        local color
+        case $status in
+            0) color="${colors[6]}" ;; # grey
+            1) color="${colors[1]}" ;; # amber
+            2) color="${colors[2]}" ;; # green
+            3) color="${colors[0]}" ;; # red
+        esac
+        printf "%b %-15s %b [%3d%%]\n" "$color" "$name" "$reset" "$progress"
+    done
+    echo "------------------------------"
+    echo "Log output below:"
+}
+
+# ------------------ SIMULATED TASKS ------------------
+download_task() {
+    echo 1 > "${status_files[0]}"
+    for i in {1..100}; do
+        echo "$i" > "${task_files[0]}"
+        sleep 0.05
+    done
+    echo 2 > "${status_files[0]}"
+}
+
+disk_task() {
+    echo 1 > "${status_files[1]}"
+    for i in {1..100}; do
+        echo "$i" > "${task_files[1]}"
+        sleep 0.03
+    done
+    echo 2 > "${status_files[1]}"
+}
+
+service_task() {
+    echo 1 > "${status_files[2]}"
+    for i in {1..100}; do
+        echo "$i" > "${task_files[2]}"
+        sleep 0.04
+    done
+    echo 3 > "${status_files[2]}"
+}
+
+# ------------------ LOG SIMULATION ------------------
+simulate_log() {
+    for i in {1..50}; do
+        echo "Installing component $i..."
+        sleep 0.1
+    done
+}
+
+# ------------------ INITIALIZATION ------------------
+clear
+tput civis  # hide cursor
+
+# Run tasks in background
+download_task &
+disk_task &
+service_task &
+simulate_log &
+
+# ------------------ MAIN REFRESH LOOP ------------------
+while :; do
+    draw_dashboard
+    sleep 0.1
+    running=false
+    for f in "${status_files[@]}"; do
+        [[ "$(cat "$f")" == "1" ]] && running=true
+    done
+    $running || break
+done
+
+# ------------------ CLEANUP ------------------
+tput cnorm
+echo "All tasks completed!"
+
+
